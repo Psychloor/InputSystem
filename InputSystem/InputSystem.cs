@@ -277,7 +277,7 @@ namespace InputSystem
             InputSettings.ClickTimeThreshold = MelonPrefs.GetFloat(SettingsCategory, "ClickThreshold");
             InputSettings.DoubleClickTimeThreshold = MelonPrefs.GetFloat(SettingsCategory, "DoubleClickThreshold");
             InputSettings.HoldTimeThreshold = MelonPrefs.GetFloat(SettingsCategory, "HoldThreshold");
-            InputSettings.TriggerThreshold = MelonPrefs.GetFloat(SettingsCategory, "AxisThreshold");
+            InputSettings.TriggerThreshold = MelonPrefs.GetFloat(SettingsCategory, "TriggerThreshold");
         }
 
         private class InputAction

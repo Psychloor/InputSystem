@@ -8,7 +8,7 @@ namespace InputSystem
 
         public const string Company = null;
 
-        public const string DownloadLink = null;
+        public const string DownloadLink = "https://github.com/Psychloor/InputSystem/releases/latest";
 
         public const string Name = "Input System";
 
