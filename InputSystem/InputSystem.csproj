@@ -63,6 +63,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="BuildInfo.cs" />
+        <Compile Include="Example.cs" />
         <Compile Include="InputAxes.cs" />
         <Compile Include="InputSystem.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
