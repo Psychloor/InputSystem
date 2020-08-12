@@ -2,7 +2,7 @@
 
 using BuildInfo = InputSystem.BuildInfo;
 
-[assembly: MelonInfo(typeof(InputSystem.InputSystem), BuildInfo.Name, BuildInfo.Version, BuildInfo.Author)]
+[assembly: MelonInfo(typeof(InputSystem.InputSystem), BuildInfo.Name, BuildInfo.Version, BuildInfo.Author, BuildInfo.DownloadLink)]
 [assembly: MelonGame]
 
 namespace InputSystem
