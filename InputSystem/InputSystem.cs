@@ -11,8 +11,6 @@ namespace InputSystem
     using System;
     using System.Collections.Generic;
 
-    using MelonLoader;
-
     using UnityEngine;
 
     public sealed class InputSystem : MelonMod
@@ -181,7 +179,7 @@ namespace InputSystem
                             if (!value.HoldTriggered)
                             {
                                 value.HoldTriggered = true;
-                                value.HoldActions.ForEach(action => action.Action?.Invoke());
+                                foreach (var action in value.HoldActions) action.Action?.Invoke();
                             }
                     }
                     else
@@ -192,16 +190,16 @@ namespace InputSystem
                             if (Time.time - value.LastTimeClicked <= InputSettings.DoubleClickTimeThreshold)
                             {
                                 value.LastTimeClicked = InputSettings.DoubleClickTimeThreshold * 2;
-                                value.DoubleClickActions.ForEach(action => action.Action?.Invoke());
+                                foreach (var action in value.DoubleClickActions) action.Action?.Invoke();
                             }
                             else
                             {
                                 value.LastTimeClicked = Time.time;
-                                value.ClickActions.ForEach(action => action.Action?.Invoke());
+                                foreach (var action in value.ClickActions) action.Action?.Invoke();
                             }
                         }
 
-                        if (value.HoldTriggered) value.HoldReleasedActions.ForEach(action => action.Action?.Invoke());
+                        if (value.HoldTriggered) foreach (var action in value.HoldReleasedActions) action.Action?.Invoke();
 
                         value.HoldTriggered = false;
                         value.TimeHeld = 0f;
@@ -228,7 +226,7 @@ namespace InputSystem
                             if (!value.HoldTriggered)
                             {
                                 value.HoldTriggered = true;
-                                value.HoldActions.ForEach(action => action.Action?.Invoke());
+                                foreach (var action in value.HoldActions) action.Action?.Invoke();
                             }
                     }
                     else
@@ -239,16 +237,16 @@ namespace InputSystem
                             if (Time.time - value.LastTimeClicked <= InputSettings.DoubleClickTimeThreshold)
                             {
                                 value.LastTimeClicked = InputSettings.DoubleClickTimeThreshold * 2;
-                                value.DoubleClickActions.ForEach(action => action.Action?.Invoke());
+                                foreach (var action in value.DoubleClickActions) action.Action?.Invoke();
                             }
                             else
                             {
                                 value.LastTimeClicked = Time.time;
-                                value.ClickActions.ForEach(action => action.Action?.Invoke());
+                                foreach (var action in value.ClickActions) action.Action?.Invoke();
                             }
                         }
 
-                        if (value.HoldTriggered) value.HoldReleasedActions.ForEach(action => action.Action?.Invoke());
+                        if (value.HoldTriggered) foreach (var action in value.HoldReleasedActions) action.Action?.Invoke();
 
                         value.HoldTriggered = false;
                         value.TimeHeld = 0f;
