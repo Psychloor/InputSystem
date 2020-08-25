@@ -16,51 +16,68 @@ namespace InputSystem
     public sealed class InputSystem : MelonMod
     {
 
+        /// <summary>
+        /// Settings struct used by the input system for different thresholds
+        /// </summary>
         public struct Settings
         {
-            
+            /// <summary>
+            /// How much time can pass before it stops being a click
+            /// </summary>
             public float ClickTimeThreshold;
 
+            /// <summary>
+            /// How much time between clicks to count as a double click
+            /// </summary>
             public float DoubleClickTimeThreshold;
 
+            /// <summary>
+            /// How long to hold an input until you start the hold action
+            /// </summary>
             public float HoldTimeThreshold;
 
+            /// <summary>
+            /// How much the axis needs to be pressed until it triggers axis actions
+            /// </summary>
             public float TriggerThreshold;
 
         }
         
         private const string SettingsCategory = "InputSystem";
 
+        /// <summary>
+        /// Settings currently in use
+        /// </summary>
         public static Settings InputSettings;
 
         private static readonly Dictionary<string, InputValues<float>> AxisDictionary = new Dictionary<string, InputValues<float>>();
 
         private static readonly Dictionary<KeyCode, InputValues<bool>> KeyCodeDictionary = new Dictionary<KeyCode, InputValues<bool>>();
-
+        
         public static void RegisterClickAction(string id, Action action, string axis)
         {
             RegisterAxis(axis);
             AxisDictionary[axis].ClickActions.Add(new InputAction { Id = id, Action = action });
         }
-
+        
         public static void RegisterClickAction(string id, Action action, KeyCode keyCode)
         {
             RegisterKey(keyCode);
             KeyCodeDictionary[keyCode].ClickActions.Add(new InputAction { Id = id, Action = action });
         }
-
+        
         public static void RegisterDoubleClickAction(string id, Action action, string axis)
         {
             RegisterAxis(axis);
             AxisDictionary[axis].DoubleClickActions.Add(new InputAction { Id = id, Action = action });
         }
-
+        
         public static void RegisterDoubleClickAction(string id, Action action, KeyCode keyCode)
         {
             RegisterKey(keyCode);
             KeyCodeDictionary[keyCode].DoubleClickActions.Add(new InputAction { Id = id, Action = action });
         }
-
+        
         public static void RegisterHoldAction(string id, Action action, string axis)
         {
             RegisterAxis(axis);
@@ -125,6 +142,26 @@ namespace InputSystem
                 value.HoldReleasedActions.RemoveAll(action => action.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
             foreach (InputValues<bool> value in KeyCodeDictionary.Values)
                 value.HoldReleasedActions.RemoveAll(action => action.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        }
+        
+        /// <summary>
+        /// Check if something has been double clicked manually and directly
+        /// </summary>
+        /// <param name="keyCode">which keycode to check</param>
+        /// <param name="lastTimeClicked">stored float of last time this has been clicked</param>
+        /// <param name="threshold">max time between clicks to count as double</param>
+        /// <returns>true if double clicked, false if not</returns>
+        public static bool HasDoubleClicked(KeyCode keyCode, ref float lastTimeClicked, float threshold)
+        {
+            if (!Input.GetKeyDown(keyCode)) return false;
+            if (Time.time - lastTimeClicked <= threshold)
+            {
+                lastTimeClicked = 100f; // no threshold should reach this
+                return true;
+            }
+
+            lastTimeClicked = Time.time;
+            return false;
         }
 
         public override void OnApplicationStart()
