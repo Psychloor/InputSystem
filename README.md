@@ -1,6 +1,6 @@
 # InputSystem (Utility for modders)
-InputSystem where you can register actions to be done at startup with specific id for all class actions or specific keys/axis
+Universal Input system for modders where you can register different type of actions to be done for spcific input types (click, double click, hold and hold released) action to register into their own inputhandling. don't have to check if it's been activated as this system will tell you when it happened.
 
-InputSystem.Register then type of what action you want to use with id which you can have a constructor create a GUID and use that.
-if you need to remove at deconstructor or so. just use InputSystem.RemoveAll or Remove specific
+As of now because it won't trigger click if you hold and won't trigger hold if clicked, so it can feel slightly delayed.
+this behaviour is purposely made to mimic game behaviour that can't be combined
 
