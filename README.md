@@ -7,3 +7,6 @@ this behaviour is purposely made to mimic game behaviour that can't be combined
 
 
 You have to give it an specific id to associate with incase it loads/unloads itself which can either be static or runtime generated per instance using Guid.Newguid and using it per action or overall actions in the same class/mod
+
+# Example
+includes a quick example/sample to test it out
