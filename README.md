@@ -4,3 +4,6 @@ Universal Input system for modders where you can register different type of acti
 It won't trigger click if you hold a key/axis and won't trigger hold if clicked, so it can feel slightly delayed.
 this behaviour is purposely made to mimic game behaviour that can't be combined
 
+
+
+You have to give it an specific id to associate with incase it loads/unloads itself which can either be static or runtime generated per instance using Guid.Newguid and using it per action or overall actions in the same class/mod
