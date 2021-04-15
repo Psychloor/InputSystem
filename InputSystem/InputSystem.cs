@@ -22,7 +22,13 @@
 
         private static MelonPreferences_Category inputSettingsCategory;
 
-        private static MelonPreferences_Entry<float> clickThresholdEntry, doubleClickThresholdEntry, holdTimeThresholdEntry, triggerThresholdEntry;
+        internal static MelonPreferences_Entry<float> ClickThresholdEntry;
+
+        internal static MelonPreferences_Entry<float> DoubleClickThresholdEntry;
+
+        internal static MelonPreferences_Entry<float> HoldTimeThresholdEntry;
+
+        internal static MelonPreferences_Entry<float> TriggerThresholdEntry;
 
         public static void RegisterClickAction(string id, Action action, string axis)
         {
@@ -136,7 +142,10 @@
         }
 
         [Obsolete("This utility method has been removed, since it's more of an manual method which could just be copy pasted from V1.1.0", true)]
-        public static bool HasDoubleClicked(KeyCode keyCode, ref float lastTimeClicked, float threshold) => false;
+        public static bool HasDoubleClicked(KeyCode keyCode, ref float lastTimeClicked, float threshold)
+        {
+            return false;
+        }
 
         public override void OnApplicationStart()
         {
@@ -146,22 +155,22 @@
             InputSettings.TriggerThreshold = 0.4f;
 
             inputSettingsCategory = MelonPreferences.CreateCategory(BuildInfo.Name, "Input System");
-            clickThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
+            ClickThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
                 "ClickThreshold",
                 InputSettings.ClickTimeThreshold,
                 "Click Time-Threshold");
 
-            doubleClickThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
+            DoubleClickThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
                 "DoubleClickThreshold",
                 InputSettings.DoubleClickTimeThreshold,
                 "Double-Click Time-Threshold");
 
-            holdTimeThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
+            HoldTimeThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
                 "HoldThreshold",
                 InputSettings.HoldTimeThreshold,
                 "Hold Time-Threshold");
 
-            triggerThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
+            TriggerThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
                 "TriggerThreshold",
                 InputSettings.TriggerThreshold,
                 "Trigger Threshold");
@@ -174,29 +183,30 @@
         /// </summary>
         public static void ResetSettings()
         {
-            clickThresholdEntry.ResetToDefault();
-            clickThresholdEntry.Save();
+            ClickThresholdEntry.ResetToDefault();
+            ClickThresholdEntry.Save();
 
-            doubleClickThresholdEntry.ResetToDefault();
-            doubleClickThresholdEntry.Save();
+            DoubleClickThresholdEntry.ResetToDefault();
+            DoubleClickThresholdEntry.Save();
 
-            holdTimeThresholdEntry.ResetToDefault();
-            holdTimeThresholdEntry.Save();
+            HoldTimeThresholdEntry.ResetToDefault();
+            HoldTimeThresholdEntry.Save();
 
-            triggerThresholdEntry.ResetToDefault();
-            triggerThresholdEntry.Save();
+            TriggerThresholdEntry.ResetToDefault();
+            TriggerThresholdEntry.Save();
         }
 
         private static void ApplySettings()
         {
-            InputSettings.ClickTimeThreshold = clickThresholdEntry.Value;
-            InputSettings.DoubleClickTimeThreshold = doubleClickThresholdEntry.Value;
-            InputSettings.HoldTimeThreshold = holdTimeThresholdEntry.Value;
-            InputSettings.TriggerThreshold = triggerThresholdEntry.Value;
+            InputSettings.ClickTimeThreshold = ClickThresholdEntry.Value;
+            InputSettings.DoubleClickTimeThreshold = DoubleClickThresholdEntry.Value;
+            InputSettings.HoldTimeThreshold = HoldTimeThresholdEntry.Value;
+            InputSettings.TriggerThreshold = TriggerThresholdEntry.Value;
         }
 
         public override void OnPreferencesSaved()
         {
+            MelonLogger.Msg("OnPreferencesSaved");
             ApplySettings();
         }
 
@@ -321,80 +331,7 @@
                 KeyCodeDictionary.Add(keyCode, new InputValues<bool>());
         }
 
-        /// <summary>
-        ///     Settings struct used by the input system for different thresholds
-        /// </summary>
-        public struct Settings
-        {
-
-            private float clickTimeThreshold;
-
-            /// <summary>
-            ///     How much time can pass before it stops being a click
-            /// </summary>
-            public float ClickTimeThreshold
-            {
-                get => clickTimeThreshold;
-                set
-                {
-                    clickThresholdEntry.Value = value;
-                    clickThresholdEntry.Save();
-                    clickTimeThreshold = value;
-                }
-            }
-
-            private float doubleClickTimeThreshold;
-
-            /// <summary>
-            ///     How much time between clicks to count as a double click
-            /// </summary>
-            public float DoubleClickTimeThreshold
-            {
-                get => doubleClickTimeThreshold;
-                set
-                {
-                    doubleClickThresholdEntry.Value = value;
-                    doubleClickThresholdEntry.Save();
-                    doubleClickTimeThreshold = value;
-                }
-            }
-
-            private float holdTimeThreshold;
-
-            /// <summary>
-            ///     How long to hold an input until you start the hold action
-            /// </summary>
-            public float HoldTimeThreshold
-            {
-                get => holdTimeThreshold;
-                set
-                {
-                    holdTimeThresholdEntry.Value = value;
-                    holdTimeThresholdEntry.Save();
-                    holdTimeThreshold = value;
-                }
-            }
-
-            /// <summary>
-            ///     How much the axis needs to be pressed until it triggers axis actions
-            /// </summary>
-            private float triggerThreshold;
-
-            /// <summary>
-            ///     How much the axis needs to be pressed until it triggers axis actions
-            /// </summary>
-            public float TriggerThreshold
-            {
-                get => triggerThreshold;
-                set
-                {
-                    triggerThresholdEntry.Value = value;
-                    triggerThresholdEntry.Save();
-                    triggerThreshold = value;
-                }
-            }
-
-        }
+       
 
     }
 
