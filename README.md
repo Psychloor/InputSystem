@@ -4,3 +4,14 @@ Universal Input system for modders where you can register different type of acti
 It won't trigger click if you hold a key/axis and won't trigger hold if clicked, so it can feel slightly delayed.
 this behaviour is purposely made to mimic game behaviour that can't be combined
 
+# Actions
+
+Click - Whenever the input has been quickly pressed. Won't trigger if going to Hold.
+
+Double Click - Whenever the input has been quickly pressed twice within the time threshold.
+
+Hold Started - When the input has been hold down long enough to start counting as being held down.
+
+Hold Repeat - When the input is still being held down. won't trigger at Hold Start/End.
+
+Hold Released - When the input has stopped being held down.
