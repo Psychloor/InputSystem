@@ -135,30 +135,8 @@
                 value.HoldReleasedActions.RemoveAll(action => action.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         }
 
-        /// <summary>
-        ///     Checks if a key has been clicked/pressed twice within a specific time threshold.
-        /// </summary>
-        /// <param name="keyCode">Key to check</param>
-        /// <param name="lastTimeClicked">Your own stored reference to last time it was handled</param>
-        /// <param name="threshold">Max amount of time between clicks to count as double</param>
-        /// <param name="multipleInRow">Whether to keep re-using last click as a double click after eachother or not</param>
-        /// <example>
-        ///     private float lastTimeForwardClicked = 5f; // has to be set
-        ///     if (HasDoubleClicked(KeyCode.W, ref lastTimeForwardClicked)) { DoStuff(); }
-        /// </example>
-        /// <returns>Whether the key has been double clicked or not</returns>
-        public static bool HasDoubleClicked(KeyCode keyCode, ref float lastTimeClicked, float threshold = .5f, bool multipleInRow = false)
-        {
-            if (!Input.GetKeyDown(keyCode)) return false;
-            if (Time.time - lastTimeClicked <= threshold)
-            {
-                lastTimeClicked = multipleInRow ? Time.time : threshold * 2f;
-                return true;
-            }
-
-            lastTimeClicked = Time.time;
-            return false;
-        }
+        [Obsolete("This utility method has been removed, since it's more of an manual method which could just be copy pasted from V1.1.0", true)]
+        public static bool HasDoubleClicked(KeyCode keyCode, ref float lastTimeClicked, float threshold) => false;
 
         public override void OnApplicationStart()
         {
@@ -415,40 +393,6 @@
                     triggerThreshold = value;
                 }
             }
-
-        }
-
-        private class InputAction
-        {
-
-            public Action Action { get; set; }
-
-            public string Id { get; set; }
-
-        }
-
-        private class InputValues<T>
-        {
-
-            public readonly List<InputAction> ClickActions = new List<InputAction>();
-
-            public readonly List<InputAction> DoubleClickActions = new List<InputAction>();
-
-            public readonly List<InputAction> HoldReleasedActions = new List<InputAction>();
-
-            public readonly List<InputAction> HoldRepeatActions = new List<InputAction>();
-
-            public readonly List<InputAction> HoldStartActions = new List<InputAction>();
-
-            public T Current { get; set; }
-
-            public bool HoldTriggered { get; set; }
-
-            public float LastTimeClicked { get; set; }
-
-            public T Previous { get; set; }
-
-            public float TimeHeld { get; set; }
 
         }
 
