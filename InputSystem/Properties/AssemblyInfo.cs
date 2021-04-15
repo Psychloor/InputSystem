@@ -1,6 +1,10 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
 
+using MelonLoader;
+
+using BuildInfo = InputSystem.BuildInfo;
+
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
@@ -31,5 +35,8 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion(InputSystem.BuildInfo.Version)]
-[assembly: AssemblyFileVersion(InputSystem.BuildInfo.Version)]
+[assembly: AssemblyVersion(BuildInfo.Version)]
+[assembly: AssemblyFileVersion(BuildInfo.Version)]
+
+[assembly: MelonInfo(typeof(InputSystem.InputSystem), BuildInfo.Name, BuildInfo.Version, BuildInfo.Author, BuildInfo.DownloadLink)]
+[assembly: MelonGame]
