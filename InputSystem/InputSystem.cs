@@ -1,15 +1,10 @@
-﻿using MelonLoader;
-
-using BuildInfo = InputSystem.BuildInfo;
-
-[assembly: MelonInfo(typeof(InputSystem.InputSystem), BuildInfo.Name, BuildInfo.Version, BuildInfo.Author, BuildInfo.DownloadLink)]
-[assembly: MelonGame]
-
-namespace InputSystem
+﻿namespace InputSystem
 {
 
     using System;
     using System.Collections.Generic;
+
+    using MelonLoader;
 
     using UnityEngine;
 
@@ -17,77 +12,70 @@ namespace InputSystem
     {
 
         /// <summary>
-        /// Settings struct used by the input system for different thresholds
-        /// </summary>
-        public struct Settings
-        {
-            /// <summary>
-            /// How much time can pass before it stops being a click
-            /// </summary>
-            public float ClickTimeThreshold;
-
-            /// <summary>
-            /// How much time between clicks to count as a double click
-            /// </summary>
-            public float DoubleClickTimeThreshold;
-
-            /// <summary>
-            /// How long to hold an input until you start the hold action
-            /// </summary>
-            public float HoldTimeThreshold;
-
-            /// <summary>
-            /// How much the axis needs to be pressed until it triggers axis actions
-            /// </summary>
-            public float TriggerThreshold;
-
-        }
-        
-        private const string SettingsCategory = "InputSystem";
-
-        /// <summary>
-        /// Settings currently in use
+        ///     Settings currently in use
         /// </summary>
         public static Settings InputSettings;
 
         private static readonly Dictionary<string, InputValues<float>> AxisDictionary = new Dictionary<string, InputValues<float>>();
 
         private static readonly Dictionary<KeyCode, InputValues<bool>> KeyCodeDictionary = new Dictionary<KeyCode, InputValues<bool>>();
-        
+
+        private static MelonPreferences_Category inputSettingsCategory;
+
+        internal static MelonPreferences_Entry<float> ClickThresholdEntry;
+
+        internal static MelonPreferences_Entry<float> DoubleClickThresholdEntry;
+
+        internal static MelonPreferences_Entry<float> HoldTimeThresholdEntry;
+
+        internal static MelonPreferences_Entry<float> TriggerThresholdEntry;
+
         public static void RegisterClickAction(string id, Action action, string axis)
         {
             RegisterAxis(axis);
             AxisDictionary[axis].ClickActions.Add(new InputAction { Id = id, Action = action });
         }
-        
+
         public static void RegisterClickAction(string id, Action action, KeyCode keyCode)
         {
             RegisterKey(keyCode);
             KeyCodeDictionary[keyCode].ClickActions.Add(new InputAction { Id = id, Action = action });
         }
-        
+
         public static void RegisterDoubleClickAction(string id, Action action, string axis)
         {
             RegisterAxis(axis);
             AxisDictionary[axis].DoubleClickActions.Add(new InputAction { Id = id, Action = action });
         }
-        
+
         public static void RegisterDoubleClickAction(string id, Action action, KeyCode keyCode)
         {
             RegisterKey(keyCode);
             KeyCodeDictionary[keyCode].DoubleClickActions.Add(new InputAction { Id = id, Action = action });
         }
-        
-        public static void RegisterHoldAction(string id, Action action, string axis)
+
+        public static void RegisterHoldStartAction(string id, Action action, string axis)
         {
             RegisterAxis(axis);
-            AxisDictionary[axis].HoldActions.Add(new InputAction { Id = id, Action = action });
+            AxisDictionary[axis].HoldStartActions.Add(new InputAction { Id = id, Action = action });
         }
 
-        public static void RegisterHoldAction(string id, Action action, KeyCode keyCode)
+        public static void RegisterHoldStartAction(string id, Action action, KeyCode keyCode)
         {
             RegisterKey(keyCode);
-            KeyCodeDictionary[keyCode].HoldActions.Add(new InputAction { Id = id, Action = action });
+            KeyCodeDictionary[keyCode].HoldStartActions.Add(new InputAction { Id = id, Action = action });
+        }
+
+        public static void RegisterHoldRepeatAction(string id, Action action, string axis)
+        {
+            RegisterAxis(axis);
+            AxisDictionary[axis].HoldRepeatActions.Add(new InputAction { Id = id, Action = action });
+        }
+
+        public static void RegisterHoldRepeatAction(string id, Action action, KeyCode keyCode)
+        {
+            RegisterKey(keyCode);
+            KeyCodeDictionary[keyCode].HoldRepeatActions.Add(new InputAction { Id = id, Action = action });
         }
 
         public static void RegisterHoldReleasedAction(string id, Action action, string axis)
@@ -106,8 +94,9 @@ namespace InputSystem
         {
             RemoveClickAction(id);
             RemoveDoubleClickAction(id);
-            RemoveHoldAction(id);
+            RemoveHoldStartAction(id);
             RemoveHoldReleasedAction(id);
+            RemoveHoldRepeatAction(id);
         }
 
         public static void RemoveClickAction(string id)
@@ -128,12 +117,20 @@ namespace InputSystem
                 value.DoubleClickActions.RemoveAll(action => action.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         }
 
-        public static void RemoveHoldAction(string id)
+        public static void RemoveHoldStartAction(string id)
         {
             foreach (InputValues<float> value in AxisDictionary.Values)
-                value.HoldActions.RemoveAll(action => action.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+                value.HoldStartActions.RemoveAll(action => action.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
             foreach (InputValues<bool> value in KeyCodeDictionary.Values)
-                value.HoldActions.RemoveAll(action => action.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+                value.HoldStartActions.RemoveAll(action => action.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static void RemoveHoldRepeatAction(string id)
+        {
+            foreach (InputValues<float> value in AxisDictionary.Values)
+                value.HoldRepeatActions.RemoveAll(action => action.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+            foreach (InputValues<bool> value in KeyCodeDictionary.Values)
+                value.HoldRepeatActions.RemoveAll(action => action.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         }
 
         public static void RemoveHoldReleasedAction(string id)
@@ -143,24 +140,10 @@ namespace InputSystem
             foreach (InputValues<bool> value in KeyCodeDictionary.Values)
                 value.HoldReleasedActions.RemoveAll(action => action.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         }
-        
-        /// <summary>
-        /// Check if something has been double clicked manually and directly
-        /// </summary>
-        /// <param name="keyCode">which keycode to check</param>
-        /// <param name="lastTimeClicked">stored float of last time this has been clicked</param>
-        /// <param name="threshold">max time between clicks to count as double</param>
-        /// <returns>true if double clicked, false if not</returns>
+
+        [Obsolete("This utility method has been removed, since it's more of an manual method which could just be copy pasted from V1.1.0", true)]
         public static bool HasDoubleClicked(KeyCode keyCode, ref float lastTimeClicked, float threshold)
         {
-            if (!Input.GetKeyDown(keyCode)) return false;
-            if (Time.time - lastTimeClicked <= threshold)
-            {
-                lastTimeClicked = 100f; // no threshold should reach this
-                return true;
-            }
-
-            lastTimeClicked = Time.time;
             return false;
         }
 
@@ -170,32 +153,60 @@ namespace InputSystem
             InputSettings.DoubleClickTimeThreshold = 0.5f;
             InputSettings.HoldTimeThreshold = 1f;
             InputSettings.TriggerThreshold = 0.4f;
-            
-            MelonPrefs.RegisterCategory(SettingsCategory, "Input System");
-            MelonPrefs.RegisterFloat(SettingsCategory, "ClickThreshold", InputSettings.ClickTimeThreshold, "Click Time-Threshold");
-            MelonPrefs.RegisterFloat(SettingsCategory, "DoubleClickThreshold", InputSettings.DoubleClickTimeThreshold, "Double-Click Time-Threshold");
-            MelonPrefs.RegisterFloat(SettingsCategory, "HoldThreshold", InputSettings.HoldTimeThreshold, "Hold Time-Threshold");
-            MelonPrefs.RegisterFloat(SettingsCategory, "TriggerThreshold", InputSettings.TriggerThreshold, "Trigger Threshold");
 
-            LoadSettings();
+            inputSettingsCategory = MelonPreferences.CreateCategory(BuildInfo.Name, "Input System");
+            ClickThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
+                "ClickThreshold",
+                InputSettings.ClickTimeThreshold,
+                "Click Time-Threshold");
+
+            DoubleClickThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
+                "DoubleClickThreshold",
+                InputSettings.DoubleClickTimeThreshold,
+                "Double-Click Time-Threshold");
+
+            HoldTimeThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
+                "HoldThreshold",
+                InputSettings.HoldTimeThreshold,
+                "Hold Time-Threshold");
+
+            TriggerThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
+                "TriggerThreshold",
+                InputSettings.TriggerThreshold,
+                "Trigger Threshold");
+
+            ApplySettings();
         }
 
         /// <summary>
-        /// Save settings for manually changing them
-        /// Will also call MelonPrefs.SaveConfig
+        ///     Resets the input settings back to default
         /// </summary>
-        public static void SaveSettings()
+        public static void ResetSettings()
         {
-            MelonPrefs.SetFloat(SettingsCategory, "ClickThreshold", InputSettings.ClickTimeThreshold);
-            MelonPrefs.SetFloat(SettingsCategory, "DoubleClickThreshold", InputSettings.DoubleClickTimeThreshold);
-            MelonPrefs.SetFloat(SettingsCategory, "HoldThreshold", InputSettings.HoldTimeThreshold);
-            MelonPrefs.SetFloat(SettingsCategory, "TriggerThreshold", InputSettings.TriggerThreshold);
-            MelonPrefs.SaveConfig();
+            ClickThresholdEntry.ResetToDefault();
+            ClickThresholdEntry.Save();
+
+            DoubleClickThresholdEntry.ResetToDefault();
+            DoubleClickThresholdEntry.Save();
+
+            HoldTimeThresholdEntry.ResetToDefault();
+            HoldTimeThresholdEntry.Save();
+
+            TriggerThresholdEntry.ResetToDefault();
+            TriggerThresholdEntry.Save();
         }
 
-        public override void OnModSettingsApplied()
+        private static void ApplySettings()
         {
-            LoadSettings();
+            InputSettings.ClickTimeThreshold = ClickThresholdEntry.Value;
+            InputSettings.DoubleClickTimeThreshold = DoubleClickThresholdEntry.Value;
+            InputSettings.HoldTimeThreshold = HoldTimeThresholdEntry.Value;
+            InputSettings.TriggerThreshold = TriggerThresholdEntry.Value;
+        }
+
+        public override void OnPreferencesSaved()
+        {
+            ApplySettings();
         }
 
         public override void OnUpdate()
@@ -216,7 +227,11 @@ namespace InputSystem
                             if (!value.HoldTriggered)
                             {
                                 value.HoldTriggered = true;
-                                foreach (var action in value.HoldActions) action.Action?.Invoke();
+                                foreach (InputAction action in value.HoldStartActions) action.Action?.Invoke();
+                            }
+                            else
+                            {
+                                foreach (InputAction holdRepeatAction in value.HoldRepeatActions) holdRepeatAction.Action?.Invoke();
                             }
                     }
                     else
@@ -227,16 +242,18 @@ namespace InputSystem
                             if (Time.time - value.LastTimeClicked <= InputSettings.DoubleClickTimeThreshold)
                             {
                                 value.LastTimeClicked = InputSettings.DoubleClickTimeThreshold * 2;
-                                foreach (var action in value.DoubleClickActions) action.Action?.Invoke();
+                                foreach (InputAction action in value.DoubleClickActions) action.Action?.Invoke();
                             }
                             else
                             {
                                 value.LastTimeClicked = Time.time;
-                                foreach (var action in value.ClickActions) action.Action?.Invoke();
+                                foreach (InputAction action in value.ClickActions) action.Action?.Invoke();
                             }
                         }
 
-                        if (value.HoldTriggered) foreach (var action in value.HoldReleasedActions) action.Action?.Invoke();
+                        if (value.HoldTriggered)
+                            foreach (InputAction action in value.HoldReleasedActions)
+                                action.Action?.Invoke();
 
                         value.HoldTriggered = false;
                         value.TimeHeld = 0f;
@@ -244,7 +261,7 @@ namespace InputSystem
                 }
                 catch (Exception e)
                 {
-                    MelonLogger.LogError(e.Message);
+                    MelonLogger.Error(e.Message);
                 }
 
             // Check Keys
@@ -263,7 +280,11 @@ namespace InputSystem
                             if (!value.HoldTriggered)
                             {
                                 value.HoldTriggered = true;
-                                foreach (var action in value.HoldActions) action.Action?.Invoke();
+                                foreach (InputAction action in value.HoldStartActions) action.Action?.Invoke();
+                            }
+                            else
+                            {
+                                foreach (InputAction holdRepeatAction in value.HoldRepeatActions) holdRepeatAction.Action?.Invoke();
                             }
                     }
                     else
@@ -274,16 +295,18 @@ namespace InputSystem
                             if (Time.time - value.LastTimeClicked <= InputSettings.DoubleClickTimeThreshold)
                             {
                                 value.LastTimeClicked = InputSettings.DoubleClickTimeThreshold * 2;
-                                foreach (var action in value.DoubleClickActions) action.Action?.Invoke();
+                                foreach (InputAction action in value.DoubleClickActions) action.Action?.Invoke();
                             }
                             else
                             {
                                 value.LastTimeClicked = Time.time;
-                                foreach (var action in value.ClickActions) action.Action?.Invoke();
+                                foreach (InputAction action in value.ClickActions) action.Action?.Invoke();
                             }
                         }
 
-                        if (value.HoldTriggered) foreach (var action in value.HoldReleasedActions) action.Action?.Invoke();
+                        if (value.HoldTriggered)
+                            foreach (InputAction action in value.HoldReleasedActions)
+                                action.Action?.Invoke();
 
                         value.HoldTriggered = false;
                         value.TimeHeld = 0f;
@@ -291,7 +314,7 @@ namespace InputSystem
                 }
                 catch (Exception e)
                 {
-                    MelonLogger.LogError(e.Message);
+                    MelonLogger.Error(e.Message);
                 }
         }
 
@@ -305,46 +328,6 @@ namespace InputSystem
         {
             if (!KeyCodeDictionary.ContainsKey(keyCode))
                 KeyCodeDictionary.Add(keyCode, new InputValues<bool>());
-        }
-
-        private static void LoadSettings()
-        {
-            InputSettings.ClickTimeThreshold = MelonPrefs.GetFloat(SettingsCategory, "ClickThreshold");
-            InputSettings.DoubleClickTimeThreshold = MelonPrefs.GetFloat(SettingsCategory, "DoubleClickThreshold");
-            InputSettings.HoldTimeThreshold = MelonPrefs.GetFloat(SettingsCategory, "HoldThreshold");
-            InputSettings.TriggerThreshold = MelonPrefs.GetFloat(SettingsCategory, "TriggerThreshold");
-        }
-
-        private class InputAction
-        {
-
-            public Action Action { get; set; }
-
-            public string Id { get; set; }
-
-        }
-
-        private class InputValues<T>
-        {
-
-            public readonly List<InputAction> ClickActions = new List<InputAction>();
-
-            public readonly List<InputAction> DoubleClickActions = new List<InputAction>();
-
-            public readonly List<InputAction> HoldActions = new List<InputAction>();
-
-            public readonly List<InputAction> HoldReleasedActions = new List<InputAction>();
-
-            public T Current { get; set; }
-
-            public bool HoldTriggered { get; set; }
-
-            public float LastTimeClicked { get; set; }
-
-            public T Previous { get; set; }
-
-            public float TimeHeld { get; set; }
-
         }
 
     }
