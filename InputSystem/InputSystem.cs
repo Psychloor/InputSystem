@@ -206,7 +206,6 @@
 
         public override void OnPreferencesSaved()
         {
-            MelonLogger.Msg("OnPreferencesSaved");
             ApplySettings();
         }
 
@@ -330,8 +329,6 @@
             if (!KeyCodeDictionary.ContainsKey(keyCode))
                 KeyCodeDictionary.Add(keyCode, new InputValues<bool>());
         }
-
-       
 
     }
 
