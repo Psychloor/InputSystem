@@ -30,6 +30,10 @@
 
         internal static MelonPreferences_Entry<float> TriggerThresholdEntry;
 
+        internal static MelonPreferences_Entry<bool> FixedUpdateEntry;
+
+        private static bool useFixedUpdate;
+
         public static void RegisterClickAction(string id, Action action, string axis)
         {
             RegisterAxis(axis);
@@ -155,25 +159,21 @@
             InputSettings.TriggerThreshold = 0.4f;
 
             inputSettingsCategory = MelonPreferences.CreateCategory(BuildInfo.Name, "Input System");
-            ClickThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
-                "ClickThreshold",
-                InputSettings.ClickTimeThreshold,
-                "Click Time-Threshold");
+            ClickThresholdEntry =
+                inputSettingsCategory.CreateEntry("ClickThreshold", InputSettings.ClickTimeThreshold, "Click Time-Threshold") as MelonPreferences_Entry<float>;
 
-            DoubleClickThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
-                "DoubleClickThreshold",
-                InputSettings.DoubleClickTimeThreshold,
-                "Double-Click Time-Threshold");
+            DoubleClickThresholdEntry = inputSettingsCategory.CreateEntry(
+                                            "DoubleClickThreshold",
+                                            InputSettings.DoubleClickTimeThreshold,
+                                            "Double-Click Time-Threshold") as MelonPreferences_Entry<float>;
 
-            HoldTimeThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
-                "HoldThreshold",
-                InputSettings.HoldTimeThreshold,
-                "Hold Time-Threshold");
+            HoldTimeThresholdEntry =
+                inputSettingsCategory.CreateEntry("HoldThreshold", InputSettings.HoldTimeThreshold, "Hold Time-Threshold") as MelonPreferences_Entry<float>;
 
-            TriggerThresholdEntry = (MelonPreferences_Entry<float>)inputSettingsCategory.CreateEntry(
-                "TriggerThreshold",
-                InputSettings.TriggerThreshold,
-                "Trigger Threshold");
+            TriggerThresholdEntry =
+                inputSettingsCategory.CreateEntry("TriggerThreshold", InputSettings.TriggerThreshold, "Trigger Threshold") as MelonPreferences_Entry<float>;
+
+            FixedUpdateEntry = inputSettingsCategory.CreateEntry("FixedUpdate", false, "Use Fixed Update") as MelonPreferences_Entry<bool>;
 
             ApplySettings();
         }
@@ -202,6 +202,19 @@
             InputSettings.DoubleClickTimeThreshold = DoubleClickThresholdEntry.Value;
             InputSettings.HoldTimeThreshold = HoldTimeThresholdEntry.Value;
             InputSettings.TriggerThreshold = TriggerThresholdEntry.Value;
+            useFixedUpdate = FixedUpdateEntry.Value;
+        }
+
+        public override void OnFixedUpdate()
+        {
+            if (!useFixedUpdate) return;
+            UpdateInputs();
+        }
+
+        public override void OnUpdate()
+        {
+            if (useFixedUpdate) return;
+            UpdateInputs();
         }
 
         public override void OnPreferencesSaved()
@@ -209,7 +222,7 @@
             ApplySettings();
         }
 
-        public override void OnUpdate()
+        private static void UpdateInputs()
         {
             // Check Axis
             foreach (KeyValuePair<string, InputValues<float>> pair in AxisDictionary)
